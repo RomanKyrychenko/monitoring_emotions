@@ -29,8 +29,9 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
     ),
     mainPanel(tabsetPanel(
       tabPanel("Візуалізація емоцій",plotOutput('plot')),
+      tabPanel("Сумарно по емоціям",plotOutput('sumEmo')),
       tabPanel("Таблиця даних",tableOutput('contents'))
     )
-      )
+  )
   )
 ))
