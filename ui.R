@@ -23,14 +23,16 @@ shinyUI(fluidPage(theme = shinytheme("cerulean"),
                                                                                           "Відраза"="Відраза",
                                                                                           "Нейтральність"="Нейтральність",
                                                                                           "Зневага"="Зневага",
-                                                                                          "Страх"="Страх")),
-      downloadButton('downloadPlot',"Завантажити візуалізацію в pdf!"),
-      downloadButton('download',"Завантажити візуалізацію в png!")
+                                                                                          "Страх"="Страх"))
+     
     ),
     mainPanel(tabsetPanel(
-      tabPanel("Візуалізація емоцій",plotOutput('plot')),
-      tabPanel("Сумарно по емоціям",plotOutput('sumEmo')),
-      tabPanel("Таблиця даних",tableOutput('contents'))
+      tabPanel("Візуалізація емоцій",plotOutput('plot'), downloadButton('downloadPlot',"Завантажити візуалізацію в pdf!"),
+               downloadButton('download',"Завантажити візуалізацію в png!")),
+      tabPanel("Сумарно по емоціям",plotOutput('sumEmo'), downloadButton('downloadPlot2',"Завантажити візуалізацію в pdf!"),
+               downloadButton('download2',"Завантажити візуалізацію в png!")),
+      tabPanel("Таблиця даних",tableOutput('contents'), downloadButton('downloadPlot3',"Завантажити таблицю в csv!"),
+               downloadButton('download3',"Завантажити таблицю в xlcx!"))
     )
   )
   )

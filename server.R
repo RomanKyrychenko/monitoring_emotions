@@ -55,11 +55,14 @@ shinyServer(function(input, output){
   ems <- reactive({
     test <- do.call("smartbind", test())
     test$time <- c(1:nrow(test))
+    names(test)[5:12] <- c("Злість","Зневага","Відраза","Страх","Радість","Нейтральність","Сум","Здивування")
     a <- test[,c(input$emo,"time")]
     b <- reshape2::melt(a, id.vars=c("time"))
     c <- b %>% group_by(variable) %>% summarise(value=mean(value))
     ggplot(c,aes(reorder(variable,-value),value)) + geom_bar(stat = "identity") +
       scale_y_continuous(labels = percent) +
+      scale_fill_manual(values=c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")) +
+      scale_colour_manual(values=c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")) +
       theme(axis.line = element_line(size=1, colour = "black"), 
             panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
             panel.border = element_blank(), panel.background = element_blank()) + 
@@ -75,10 +78,15 @@ shinyServer(function(input, output){
     ems()
   })
   
-output$contents <- renderTable({
+  tbl <- reactive({
     test <- do.call("smartbind", test())
     test$time <- c(1:nrow(test))
+    names(test)[5:12] <- c("Злість","Зневага","Відраза","Страх","Радість","Нейтральність","Сум","Здивування")
     tryCatch(test[5:12])
+  })
+  
+output$contents <- renderTable({
+    tbl()
   }
 )
  
@@ -99,4 +107,35 @@ output$contents <- renderTable({
       dev.off()
     }
     )
+  output$downloadPlot2 <-  downloadHandler(
+    filename = 'test.pdf',
+    content = function(file) {
+      pdf(file = file, width=12, height=4)
+      print(df())
+      dev.off()
+    }
+  )
+  
+  output$download2<-  downloadHandler(
+    filename = 'test.png',
+    content = function(file) {
+      png(file = file, width=1200, height=400)
+      print(df())
+      dev.off()
+    }
+  )
+  output$downloadPlot3 <- downloadHandler(
+    filename = function() { paste(input$dataset, '.csv', sep='') },
+    content = function(file) {
+      write.csv(tbl(), file)
+    }
+  )
+  
+  output$download<-  downloadHandler(
+    filename = 'test.png',
+    content = function(file) {
+      write.xlsx(x = sample.dataframe, file = "test.excelfile.xlsx",
+                 sheetName = "TestSheet", row.names = FALSE)
+    }
+  )
 })
