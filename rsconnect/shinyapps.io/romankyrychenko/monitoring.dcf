@@ -3,8 +3,9 @@ title: monitoring
 account: romankyrychenko
 server: shinyapps.io
 appId: 151763
-bundleId: 683418
+bundleId: 687505
 url: https://romankyrychenko.shinyapps.io/monitoring/
-when: 1484753596.17711
+when: 1485122015.89896
 asMultiple: FALSE
 asStatic: FALSE
+ignoredFiles: .RData
