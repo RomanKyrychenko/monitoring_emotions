@@ -111,7 +111,7 @@ output$contents <- renderTable({
     filename = 'test.pdf',
     content = function(file) {
       pdf(file = file, width=12, height=4)
-      print(df())
+      print(ems())
       dev.off()
     }
   )
@@ -120,7 +120,7 @@ output$contents <- renderTable({
     filename = 'test.png',
     content = function(file) {
       png(file = file, width=1200, height=400)
-      print(df())
+      print(ems())
       dev.off()
     }
   )
