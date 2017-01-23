@@ -132,4 +132,10 @@ output$contents <- renderTable({
       write.csv(tbl(), file)
     }
   )
+  output$download3 <- downloadHandler(
+    filename = function() { paste('emotion',Sys.Date(), '.xlsx', sep='') },
+    content = function(file) {
+  write.xlsx(tbl(), file, sheetName = "emotions", row.names = FALSE)
+    }
+  )
 })
