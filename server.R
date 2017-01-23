@@ -41,19 +41,16 @@ shinyServer(function(input, output){
     names(test)[5:12] <- c("Злість","Зневага","Відраза","Страх","Радість","Нейтральність","Сум","Здивування")
     a <- test[,c(input$emo,"time")]
     b <- reshape2::melt(a, id.vars=c("time"))
-    b$colors <- ifelse(b$variable=="Злість","#999999",
-                       ifelse(b$variable=="Зневага","#E69F00",
-                              ifelse(b$variable=="Відраза","#56B4E9",
-                                     ifelse(b$variable=="Страх","#009E73",
-                                            ifelse(b$variable=="Радість","#F0E442",
-                                                   ifelse(b$variable=="Нейтральність","#0072B2",
-                                                          ifelse(b$variable=="Сум","#D55E00","#CC79A7")))))))
-    
-    ggplot(b,aes(time)) + 
-      geom_point(aes(y=value,fill=variable,color=variable), alpha=0.8) +
+    b$colors <- ifelse(b$variable=="Злість","#f15d63",
+                       ifelse(b$variable=="Зневага","#a4d06f",
+                              ifelse(b$variable=="Відраза","#cd956e",
+                                     ifelse(b$variable=="Страх","#9277b6",
+                                            ifelse(b$variable=="Радість","#ffe155",
+                                                   ifelse(b$variable=="Нейтральність","#cdcfd0",
+                                                          ifelse(b$variable=="Сум","#62abd2","#f6afce")))))))
+    ggplot(b,aes(time,value)) + 
+      geom_jitter(fill=b$colors,color=b$colors, alpha=1)+
       scale_y_continuous(labels = percent) +
-      scale_fill_manual(values=b$colors) +
-      scale_colour_manual(values=b$colors) +
       theme(axis.line = element_line(size=1, colour = "black"), 
             panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
             panel.border = element_blank(), panel.background = element_blank()) + 
@@ -76,13 +73,13 @@ shinyServer(function(input, output){
     a <- test[,c(input$emo,"time")]
     b <- reshape2::melt(a, id.vars=c("time"))
     c <- b %>% group_by(variable) %>% summarise(value=mean(value))
-    c$colors <- ifelse(c$variable=="Злість","#999999",
-                       ifelse(c$variable=="Зневага","#E69F00",
-                              ifelse(c$variable=="Відраза","#56B4E9",
-                                     ifelse(c$variable=="Страх","#009E73",
-                                            ifelse(c$variable=="Радість","#F0E442",
-                                                   ifelse(c$variable=="Нейтральність","#0072B2",
-                                                          ifelse(c$variable=="Сум","#D55E00","#CC79A7")))))))
+    c$colors <- ifelse(c$variable=="Злість","#f15d63",
+                       ifelse(c$variable=="Зневага","#a4d06f",
+                              ifelse(c$variable=="Відраза","#cd956e",
+                                     ifelse(c$variable=="Страх","#9277b6",
+                                            ifelse(c$variable=="Радість","#ffe155",
+                                                   ifelse(c$variable=="Нейтральність","#cdcfd0",
+                                                          ifelse(c$variable=="Сум","#62abd2","#f6afce")))))))
     c
     
   })
