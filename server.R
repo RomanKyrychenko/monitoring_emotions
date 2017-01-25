@@ -1,6 +1,6 @@
 library(shiny)
 library(shinythemes)
-
+options(rsconnect.max.bundle.size=3145728000)
 shinyServer(function(input, output){
   tes <- reactive({
     validate(
@@ -30,17 +30,17 @@ shinyServer(function(input, output){
         POST(
           face_api_url, body = x,
           add_headers(.headers = c("Content-Type"="application/octet-stream",
-                                   "Ocp-Apim-Subscription-Key"="4423ea1091254e7497d0e35bcc51c462")))))
+                                   "Ocp-Apim-Subscription-Key"="335d7b5b1aeb47eebf6d69b0afd9a654")))))
     a
     })
   })
   
   df <- reactive({
     test <- do.call("smartbind", test())
-    test$time <- c(1:nrow(test))
+    test$Час <- parse_number(sapply(strsplit(tes()$name, split="\\IMG_"), tail, 1L))
     names(test)[5:12] <- c("Злість","Зневага","Відраза","Страх","Радість","Нейтральність","Сум","Здивування")
-    a <- test[,c(input$emo,"time")]
-    b <- reshape2::melt(a, id.vars=c("time"))
+    a <- test[,c(input$emo,"Час")]
+    b <- reshape2::melt(a, id.vars=c("Час"))
     b$colors <- ifelse(b$variable=="Злість","#f15d63",
                        ifelse(b$variable=="Зневага","#a4d06f",
                               ifelse(b$variable=="Відраза","#cd956e",
@@ -48,7 +48,7 @@ shinyServer(function(input, output){
                                             ifelse(b$variable=="Радість","#ffe155",
                                                    ifelse(b$variable=="Нейтральність","#cdcfd0",
                                                           ifelse(b$variable=="Сум","#62abd2","#f6afce")))))))
-    ggplot(b,aes(time,value)) + 
+    ggplot(b,aes(as.POSIXct(Час-7200,origin="1975-01-01"),value)) + 
       geom_jitter(fill=b$colors,color=b$colors, alpha=1)+
       scale_y_continuous(labels = percent) +
       theme(axis.line = element_line(size=1, colour = "black"), 
@@ -67,30 +67,30 @@ shinyServer(function(input, output){
   })
   en <- reactive({
     test <- do.call("smartbind", test())
-    test$time <- c(1:nrow(test))
+    test$Час <- parse_number(sapply(strsplit(tes()$name, split="\\IMG_"), tail, 1L))
     names(test)[5:12] <- c("Злість","Зневага","Відраза","Страх","Радість","Нейтральність","Сум","Здивування")
-    colors <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
-    a <- test[,c(input$emo,"time")]
-    b <- reshape2::melt(a, id.vars=c("time"))
-    c <- b %>% group_by(variable) %>% summarise(value=mean(value))
-    c$colors <- ifelse(c$variable=="Злість","#f15d63",
-                       ifelse(c$variable=="Зневага","#a4d06f",
-                              ifelse(c$variable=="Відраза","#cd956e",
-                                     ifelse(c$variable=="Страх","#9277b6",
-                                            ifelse(c$variable=="Радість","#ffe155",
-                                                   ifelse(c$variable=="Нейтральність","#cdcfd0",
-                                                          ifelse(c$variable=="Сум","#62abd2","#f6afce")))))))
-    c
+    a <- test[,c(input$emo,"Час")]
+    b <- reshape2::melt(a, id.vars=c("Час"))
+    c <- b %>% group_by(variable) %>% summarise(value=mean(value,na.rm=T))
+    names(c)<- c("Емоція","Середнє значення")
+    c$Колір <- ifelse(c$Емоція=="Злість","#f15d63",
+                       ifelse(c$Емоція=="Зневага","#a4d06f",
+                              ifelse(c$Емоція=="Відраза","#cd956e",
+                                     ifelse(c$Емоція=="Страх","#9277b6",
+                                            ifelse(c$Емоція=="Радість","#ffe155",
+                                                   ifelse(c$Емоція=="Нейтральність","#cdcfd0",
+                                                          ifelse(c$Емоція=="Сум","#62abd2","#f6afce")))))))
+    tryCatch(c)
     
   })
   
   output$contents2 <- renderTable({
-    en()
+    en()[1:2]
   })
   
   ems <- reactive({
-    ggplot(en(),aes(reorder(variable,-value),value, fill=variable)) + geom_bar(stat = "identity") +
-      scale_fill_manual(values = en()$colors) +
+    ggplot(en(),aes(reorder(Емоція,-`Середнє значення`),`Середнє значення`, fill=Емоція)) + geom_bar(stat = "identity") +
+      scale_fill_manual(values = en()$Колір) +
       scale_y_continuous(labels = percent) +
       theme(axis.line = element_line(size=1, colour = "black"), 
             panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
@@ -109,10 +109,10 @@ shinyServer(function(input, output){
   
   tbl <- reactive({
     test <- do.call("smartbind", test())
-    test$time <- c(1:nrow(test))
-    test$name <- tes()$datapath
+    test$Час <- parse_number(sapply(strsplit(tes()$name, split="\\IMG_"), tail, 1L))
+    test$Назва <- tes()$name
     names(test)[5:12] <- c("Злість","Зневага","Відраза","Страх","Радість","Нейтральність","Сум","Здивування")
-    tryCatch(test[c("Злість","Зневага","Відраза","Страх","Радість","Нейтральність","Сум","Здивування","name")])
+    tryCatch(test[c("Злість","Зневага","Відраза","Страх","Радість","Нейтральність","Сум","Здивування","Час","Назва")])
   })
   
   output$contents <- renderTable({
@@ -121,7 +121,7 @@ shinyServer(function(input, output){
   )
  
  output$downloadPlot <-  downloadHandler(
-   filename = 'test.pdf',
+   filename =  function() { paste('emotion_points',Sys.Date(), '.pdf', sep='') },
    content = function(file) {
      pdf(file = file, width=12, height=4)
      print(df())
@@ -130,7 +130,7 @@ shinyServer(function(input, output){
   )
   
   output$download<-  downloadHandler(
-    filename = 'test.png',
+    filename =  function() { paste('emotion_points',Sys.Date(), '.png', sep='') },
     content = function(file) {
       png(file = file, width=1200, height=400)
       print(df())
@@ -138,7 +138,7 @@ shinyServer(function(input, output){
     }
     )
   output$downloadPlot2 <-  downloadHandler(
-    filename = 'test.pdf',
+    filename =  function() { paste('emotion_sum',Sys.Date(), '.pdf', sep='') },
     content = function(file) {
       pdf(file = file, width=12, height=4)
       print(ems())
@@ -147,7 +147,7 @@ shinyServer(function(input, output){
   )
   
   output$download2<-  downloadHandler(
-    filename = 'test.png',
+    filename =  function() { paste('emotion_sum',Sys.Date(), '.png', sep='') },
     content = function(file) {
       png(file = file, width=1200, height=400)
       print(ems())
